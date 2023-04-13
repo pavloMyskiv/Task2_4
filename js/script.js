@@ -1,66 +1,55 @@
 /** @format */
+import { Validator } from './modules/classValidator.js';
 
 const formItems = document.querySelectorAll('input');
 const submitButton = document.getElementById('submitButton');
 const form = document.querySelector('form');
 
-class Validator {
-  static isEmail(item) {
-    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    if (item.id == 'email') {
-      return emailRegex.test(item.value);
-    } else {
-      return true;
+const validator = new Validator();
+
+const validationMap = new Map([
+  ['required', validator.isRequired],
+  ['phone', validator.isPhone],
+  ['email', validator.isEmail],
+  ['birth_date', validator.isDate],
+  ['password', validator.confirmPassword],
+]);
+
+const outputError = (item, isValid) => {
+  let error = 0;
+  if (isValid) {
+    item.parentNode.classList.remove('error');
+  } else {
+    item.parentNode.classList.add('error');
+    error++;
+  }
+  return error;
+};
+const validateForm = (itemList) => {
+  let formErrorCount = 0;
+  for (let i = 0; i < itemList.length; i++) {
+    if (itemList[i].hasAttribute('required')) {
+      const validationMethod = validationMap.get('required');
+      formErrorCount =
+        formErrorCount +
+        outputError(itemList[i], !validationMethod(itemList[i]));
+    }
+    if (validationMap.has(itemList[i].id) && itemList[i].value != '') {
+      const validationMethod = validationMap.get(itemList[i].id);
+      formErrorCount =
+        formErrorCount +
+        outputError(
+          itemList[i],
+          validationMethod(itemList[i], itemList[i + 1])
+        );
     }
   }
-  static isPhone(item) {
-    const phoneRegex = /^\+\d{12}$/;
-    if (item.id == 'phone') {
-      return phoneRegex.test(item.value);
-    } else {
-      return true;
-    }
-  }
-  static isDate(item) {
-    const dataRegex = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/\d{4}$/;
-    if (item.id == 'birth_date') {
-      return dataRegex.test(item.value) || item.value == '';
-    } else {
-      return true;
-    }
-  }
-  static isRequired(item) {
-    return item.hasAttribute('required') && item.value == '';
-  }
-  static confirmPassword(item, itemNext) {
-    if (item.id == 'password' && item.value != itemNext.value) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  static validateForm(itemList) {
-    let formErrorCount = 0;
-    for (let i = 0; i < itemList.length; i++) {
-      if (
-        this.isRequired(itemList[i]) ||
-        !this.isEmail(itemList[i]) ||
-        !this.isPhone(itemList[i]) ||
-        !this.isDate(itemList[i]) ||
-        !this.confirmPassword(itemList[i], itemList[i + 1])
-      ) {
-        itemList[i].parentNode.classList.add('error');
-        formErrorCount++;
-      } else {
-        itemList[i].parentNode.classList.remove('error');
-      }
-    }
-    return formErrorCount == 0;
-  }
-}
+  return formErrorCount;
+};
+
 submitButton.addEventListener('click', (event) => {
   event.preventDefault();
-  if (Validator.validateForm(formItems)) {
+  if (validateForm(formItems) == 0) {
     form.submit();
   }
 });
