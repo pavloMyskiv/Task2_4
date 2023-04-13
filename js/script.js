@@ -31,8 +31,8 @@ class Validator {
   static isRequired(item) {
     return item.hasAttribute('required') && item.value == '';
   }
-  static confirmPassword(item) {
-    if (item.id == 'password' && item.value == item.nextSibling.value) {
+  static confirmPassword(item, itemNext) {
+    if (item.id == 'password' && item.value != itemNext.value) {
       return false;
     } else {
       return true;
@@ -45,7 +45,7 @@ class Validator {
         !this.isEmail(itemList[i]) ||
         !this.isPhone(itemList[i]) ||
         !this.isDate(itemList[i]) ||
-        !this.confirmPassword(itemList[i])
+        !this.confirmPassword(itemList[i], itemList[i + 1])
       ) {
         itemList[i].parentNode.classList.add('error');
       } else {
