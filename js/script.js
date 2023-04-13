@@ -1,7 +1,8 @@
 /** @format */
 
-let formItems = document.querySelectorAll('input');
-const submit = document.getElementById('submit');
+const formItems = document.querySelectorAll('input');
+const submitButton = document.getElementById('submitButton');
+const form = document.querySelector('form');
 
 class Validator {
   static isEmail(item) {
@@ -39,6 +40,7 @@ class Validator {
     }
   }
   static validateForm(itemList) {
+    let formErrorCount = 0;
     for (let i = 0; i < itemList.length; i++) {
       if (
         this.isRequired(itemList[i]) ||
@@ -48,12 +50,18 @@ class Validator {
         !this.confirmPassword(itemList[i], itemList[i + 1])
       ) {
         itemList[i].parentNode.classList.add('error');
+        formErrorCount++;
       } else {
         itemList[i].parentNode.classList.remove('error');
       }
     }
+    return formErrorCount == 0;
   }
 }
-submit.addEventListener('click', () => {
-  Validator.validateForm(formItems);
+submitButton.addEventListener('click', (event) => {
+  event.preventDefault();
+  if (Validator.validateForm(formItems)) {
+    form.submit();
+  }
 });
+
